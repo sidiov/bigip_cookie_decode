@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="UTF-8">
+    </head>
+<body>
+    <h1>F5 BIG-IP Cookie Decoder</h1>
+    <form action="/action_page.php">
+        <label for="bipcookie">BIG-IP Cookie value:</label>
+        <input type="text" id="bipcookie" name="bipcookie"><br>
+    </form>
+    <button onclick="cookie_decode()">Decode</button>
+
+    <p id="answer1">Server IP:</p>
+    <p id="answer2">Server Port:</p>
+
+    <script>
+        function cookie_decode() {
+          var bigcookie = document.getElementById("bipcookie").value;
+          var bigcookieSplit = bigcookie.split('=');
+
+          if(bigcookieSplit.length > 1){
+                var bigipIP = decryptBigIpCookie(bigcookieSplit[1]);
+            } else {
+                var bigipIP = decryptBigIpCookie(bigcookieSplit[0]);
+            }
+
+          document.getElementById("answer1").innerHTML = "Server IP: " + bigipIP.ip;
+          document.getElementById("answer2").innerHTML = "Server Port: " + bigipIP.port;
+        }
+
+        //https://gist.github.com/ValentinH/
+        function decryptBigIpCookie(cookieValue) {
+            const [ipPart, portPart] = cookieValue.split('.')
+
+            const hexIp = parseInt(ipPart, 10)
+                .toString(16)
+                .padStart(8, '0')
+            const ip1 = parseInt(hexIp.toString().substring(6, 8), 16)
+            const ip2 = parseInt(hexIp.toString().substring(4, 6), 16)
+            const ip3 = parseInt(hexIp.toString().substring(2, 4), 16)
+            const ip4 = parseInt(hexIp.toString().substring(0, 2), 16)
+            const ip = `${ip1}.${ip2}.${ip3}.${ip4}`
+
+            const hexPort = parseInt(portPart, 10)
+                .toString(16)
+                .padStart(4, '0')
+            const port1 = hexPort.toString().substring(2, 4)
+            const port2 = hexPort.toString().substring(0, 2)
+            const port = parseInt(`${port1}${port2}`, 16)
+
+            return {
+                ip,
+                port,
+            }
+        }
+    </script>
+</body>
+</html>
